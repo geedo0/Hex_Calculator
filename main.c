@@ -11,6 +11,26 @@
 // 'C' source line config statements
 
 #include <xc.h>
+#include "config.h"
+#include "lcd.h"
+
+#define MATRIX_REG      PORTB
+
+void init() {
+    OSCCON = 0x7000;    //FRC+PLL+Postscaler
+    CLKDIV = 0x100;     //FRC /2
+    OSCTUN = 0x0000;    //Calibration
+
+    //Port A = LCD_REG
+    //Port B = MATRIX_REG
+    // RB2 to RB8 = Rows = Outputs, RB9 to RB15 = Cols = Inputs
+    ANSA = 0x0000;
+    ANSB = 0x0000;
+    TRISA = 0x0000;
+    TRISB = 0x01FC;
+    LCD_REG = 0x0000;
+    MATRIX_REG = 0x0000;
+}
 
 void delay(unsigned int iters) {
     int i, j;
@@ -19,17 +39,8 @@ void delay(unsigned int iters) {
 }
 
 int main(void) {
-    int freq = 1;
-    //Configure Clock
-    OSCCON = 0x7000;    //FRC+PLL+Postscaler, Clock Lock, Lock PLL
-    CLKDIV = 0x100;     //FRC /2, 1:1 CPU:Peripheral
-    OSCTUN = 0x0000;    //Calibrate
-
-    ANSA = 0x0000;
-    ANSB = 0x0000;
-
-    TRISA = 0;
-    TRISB = 0;
+    int freq = 2;
+    init();
 
     while(1) {
         PORTB = 0xaaaa;
