@@ -10,14 +10,15 @@
 
 // 'C' source line config statements
 
-#include <xc.h>
 #include "config.h"
 #include "lcd.h"
+#include <xc.h>
 
 #define MATRIX_REG      PORTB
 
 void init() {
-    OSCCON = 0x7000;    //FRC+PLL+Postscaler
+    //Clock settings, Internal oscillator = 8Mhz/2 = 4Mhz
+    OSCCON = 0x7000;    //FRC+Postscaler
     CLKDIV = 0x100;     //FRC /2
     OSCTUN = 0x0000;    //Calibration
 
@@ -30,12 +31,13 @@ void init() {
     TRISB = 0x01FC;
     LCD_REG = 0x0000;
     MATRIX_REG = 0x0000;
-}
 
-void delay(unsigned int iters) {
-    int i, j;
-    for(j = 0; j < iters; j++)
-        for(i = 0; i < 0xffff; i++);
+    //Timer1 module for general delays at 250khz
+    T1CON = _T1CON_TSIDL_MASK + 0x10;  //(Fosc/2) /8
+    TMR1 = 0;
+    IFS0 &= ~_IFS0_T1IF_MASK;
+
+    lcdInit();
 }
 
 int main(void) {
