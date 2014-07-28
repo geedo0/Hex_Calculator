@@ -22,6 +22,11 @@ extern "C" {
 
 void init();
 void delayCycles(int cycles);
+int scanKeys();
+void blockForKey();
+
+void _T1Interrupt(void);
+void _CNInterrupt(void);
 
 #ifdef	__cplusplus
 }

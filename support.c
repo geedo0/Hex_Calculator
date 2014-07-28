@@ -21,9 +21,14 @@ void init() {
     TMR1 = 0;
     IFS0 &= ~_IFS0_T1IF_MASK;
     IPC0 |= 0x4000;
+
+    //
+    CNPD1bits.CN11PDE = 1;
+    CNPD1bits.CN12PDE = 1;
+    CNEN1bits.CN11IE = 1;
+    CNEN1bits.CN12IE = 1;
+    IPC4 = 0x4000;
 }
-
-
 
 //250khz
 void delayCycles(int cycles) {
@@ -35,4 +40,40 @@ void delayCycles(int cycles) {
     Idle();
 }
 
+int scanKeys() {
+    unsigned int testRow = 0x04;
+    unsigned int testCol;
+    unsigned int key = 0;
+    for(testRow = 0x04; testRow <= 0x08; testRow <<= 1){
+        MATRIX_REG |= testRow;
+        for(testCol = 0x8000; testCol >= 0x4000; testCol >>= 1) {
+            if(testCol & MATRIX_REG) {
+                return key;
+            }
+            key++;
+        }
+        MATRIX_REG &= ~testRow;
+    }
+    return -1;
+}
 
+void blockForKey() {
+    IFS1bits.CNIF = 0;
+    Nop();
+    IEC1bits.CNIE = 1;
+    Sleep();
+}
+
+void _ISR _T1Interrupt(void) {
+    IFS0 &= ~_IFS0_T1IF_MASK;
+    T1CON &= ~_T1CON_TON_MASK;
+    IEC0bits.T1IE = 0;
+}
+
+void _ISR _CNInterrupt(void) {
+    IEC1bits.CNIE = 0;
+    IFS1bits.CNIF = 0;
+    MATRIX_REG &= ~ROW_MASK;
+    //Debounce 40ms
+    delayCycles(10000);
+}
