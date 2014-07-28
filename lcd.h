@@ -12,9 +12,7 @@
 extern "C" {
 #endif
 
-#include <xc.h>
-
-#define LCD_REG         PORTA
+#include "support.h"
 
 #define LCD_RS          0x10
 #define LCD_EN          0x40

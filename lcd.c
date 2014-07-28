@@ -69,14 +69,3 @@ void lcdLatch() {
     delayCycles(1);     //4us
     LCD_REG &= ~LCD_EN;
 }
-//250khz
-void delayCycles(int cycles) {
-    IFS0 &= ~_T1IF;
-    TMR1 = 0;
-    PR1 = cycles;
-    T1CON |= _T1CON_TON_MASK;
-    while(!(IFS0 & _IFS0_T1IF_MASK));
-    IFS0 &= ~_IFS0_T1IF_MASK;
-    T1CON &= ~_T1CON_TON_MASK;
-}
-
