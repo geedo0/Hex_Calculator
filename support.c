@@ -22,7 +22,7 @@ void init() {
     IFS0 &= ~_IFS0_T1IF_MASK;
     IPC0 |= 0x4000;
 
-    //
+    //Change Notification
     CNPD1bits.CN11PDE = 1;
     CNPD1bits.CN12PDE = 1;
     CNEN1bits.CN11IE = 1;

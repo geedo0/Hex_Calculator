@@ -8,32 +8,41 @@
 #include "support.h"
 #include "lcd.h"
 
+#define RGB_MASK   0x1C0
+
 int main(void) {
     int key;
     init();
     lcdInit();
 
     lcdSend(LCD_COMMAND, LCD_DISPLAYCONTROL + LCD_DISPLAYON + LCD_CURSORON + LCD_BLINKON);
-    lcdPrint("Gerardo Ravago");
+    lcdPrint("Key Matrix + LCD");
+    lcdSetCursor(0, 1);
+    lcdPrint("Demo");
 
     for(;;) {
-        MATRIX_REG = ROW_MASK;
+        MATRIX_REG |= ROW_MASK;
         blockForKey();      //Press
         key = scanKeys();
         blockForKey();      //Release
+        MATRIX_REG &= ~RGB_MASK;
+        lcdClear();
+        lcdHome();
         switch(key) {
             case 0:
-                lcdClear();
-                lcdHome();
+                lcdPrintSlow("Gerardo Ravago");
                 break;
             case 1:
-                lcdSend(LCD_DATA, 0x31);
+                lcdPrint("Red Selected");
+                MATRIX_REG |= 0x40;
                 break;
             case 2:
-                lcdSend(LCD_DATA, 0x32);
+                lcdPrint("Green Selected");
+                MATRIX_REG |= 0x100;
                 break;
             case 3:
-                lcdSend(LCD_DATA, 0x30);
+                lcdPrint("Blue Selected");
+                MATRIX_REG |= 0x80;
                 break;
             default:
                 break;
