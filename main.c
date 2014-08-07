@@ -16,9 +16,7 @@ int main(void) {
     lcdInit();
 
     lcdSend(LCD_COMMAND, LCD_DISPLAYCONTROL + LCD_DISPLAYON + LCD_CURSORON + LCD_BLINKON);
-    lcdPrint("Key Matrix + LCD");
-    lcdSetCursor(0, 1);
-    lcdPrint("Demo");
+    changeBase(currentBase);
 
     for(;;) {
         MATRIX_REG |= ROW_MASK;
@@ -29,20 +27,17 @@ int main(void) {
         lcdClear();
         lcdHome();
         switch(key) {
-            case 0:
-                lcdPrintSlow("Gerardo Ravago");
+            case 3: //Button 0
+                changeBase(BASE_BIN);
                 break;
-            case 1:
-                lcdPrint("Red Selected");
-                MATRIX_REG |= 0x40;
+            case 1: //Button 1
+                changeBase(BASE_OCT);
                 break;
-            case 2:
-                lcdPrint("Green Selected");
-                MATRIX_REG |= 0x100;
+            case 2: //Button 2
+                changeBase(BASE_DEC);
                 break;
-            case 3:
-                lcdPrint("Blue Selected");
-                MATRIX_REG |= 0x80;
+            case 0: //Button 3
+                changeBase(BASE_HEX);
                 break;
             default:
                 break;

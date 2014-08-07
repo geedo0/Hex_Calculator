@@ -1,5 +1,8 @@
 #include "support.h"
 
+int currentBase = BASE_DEC;
+char currentInput[17] = "12345";
+
 void init() {
     //Clock settings, Internal oscillator = 8Mhz/2 = 4Mhz
     OSCCON = 0x7000;    //FRC+Postscaler
@@ -62,6 +65,120 @@ void blockForKey() {
     Nop();
     IEC1bits.CNIE = 1;
     Sleep();
+}
+
+void changeBase(int base) {
+    unsigned int oldInput;
+    oldInput = parseInput();
+    lcdClear();
+    currentBase = base;
+    switch(base) {
+        case BASE_BIN:
+            lcdSetCursor(10,1);
+            lcdPrint("Binary");
+            break;
+        case BASE_OCT:
+            lcdSetCursor(11,1);
+            lcdPrint("Octal");
+            break;
+        case BASE_DEC:
+            lcdSetCursor(9,1);
+            lcdPrint("Decimal");
+            break;
+        case BASE_HEX:
+            lcdSetCursor(5,1);
+            lcdPrint("Hexadecimal");
+            break;
+    }
+    lcdHome();
+    updateInput(oldInput);
+    lcdPrint(currentInput);
+}
+
+unsigned int parseInput() {
+    char* pInput = currentInput;
+    char digit;
+    unsigned int output = 0;
+
+    while(*pInput != 0) {
+        digit = *pInput;
+        pInput++;
+        switch(currentBase) {
+            case BASE_BIN:
+                output <<= 1;
+                output |= digit - 48;
+                break;
+            case BASE_OCT:
+                output <<= 3;
+                output |= digit - 48;
+                break;
+            case BASE_DEC:
+                output *= 10;
+                output += digit - 48;
+                break;
+            case BASE_HEX:
+                output <<= 4;
+                if((digit >= '0') && (digit <= '9'))
+                    output |= digit - 48;
+                else
+                    output |= digit - 55;
+                break;
+        }
+    }
+    return output;
+}
+
+void updateInput(unsigned int number) {
+    char buffer[16];
+    char *pBuffer = buffer;
+    char digit;
+
+    if(number == 0) {
+        *pBuffer = '0';
+        pBuffer++;
+    }
+    else {
+        while(number != 0) {
+            switch(currentBase) {
+                case BASE_BIN:
+                    digit = number & 0x1;
+                    number >>= 1;
+                    *pBuffer = digit + 48;
+                    pBuffer++;
+                    break;
+                case BASE_OCT:
+                    digit = number & 0x7;
+                    number >>= 3;
+                    *pBuffer = digit + 48;
+                    pBuffer++;
+                    break;
+                case BASE_DEC:
+                    digit = number % 10;
+                    number /= 10;
+                    *pBuffer = digit + 48;
+                    pBuffer++;
+                    break;
+                case BASE_HEX:
+                    digit = number & 0xf;
+                    number >>= 4;
+                    if(digit <= 9)
+                        digit += 48;
+                    else
+                        digit += 55;
+                    *pBuffer = digit;
+                    pBuffer++;
+                    break;
+            }
+        }
+    }
+    //Reuse digit variable as an iterator
+    digit = 0;
+    pBuffer--;
+    while(pBuffer >= buffer) {
+        currentInput[digit++] = *pBuffer;
+        pBuffer--;
+    }
+    currentInput[digit] = 0x00;
 }
 
 void _ISR _T1Interrupt(void) {
